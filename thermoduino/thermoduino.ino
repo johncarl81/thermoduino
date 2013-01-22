@@ -4,7 +4,8 @@
 #define DHTPIN 4     // what pin we're connected to
 #define DHTTYPE DHT22   // DHT 22  (AM2302)
 
-int deviceId = 1;
+int deviceId = 2;
+int loopVal = 0;
 
 SoftwareSerial xbeeSerial(2,3);
 DHT dht(DHTPIN, DHTTYPE);
@@ -19,34 +20,67 @@ void setup()
 
 void loop()
 {
-  float h = dht.readHumidity();
-  float t = dht.readTemperature();
+  loopVal++;
   
-  xbeeSerial.print(buildReading(deviceId, h, (t * 9/5 + 32)));
+  if(loopVal == 100){
+    float h = dht.readHumidity();
+    float t = dht.readTemperature();
+    
+    String reading = buildReading(deviceId, h, (t * 9/5 + 32));
+    xbeeSerial.print(reading);
+    outputValues(reading);
+    loopVal = 0;
+  }
   
   String content = "";
-  boolean reading = false;
+  boolean serialRead = false;
   while(xbeeSerial.available()){
     char c = xbeeSerial.read();
     if(c == 's'){
-      reading = true;
+      serialRead = true;
       content = "";
     }
     
-    if(reading){
+    if(serialRead){
       content.concat(c);
     }
     
     if(c == 'e'){
-      reading = false;
-      Serial.print("Validation: ");
-      Serial.print(validate(content));
-      Serial.print(" Content: ");
-      Serial.println(content);
+      serialRead = false;
+      outputValues(content);
+      parseValues(content);
     }
   }
   
-  delay(1000);
+  delay(10000);
+}
+
+void outputValues(String content){
+  /*Serial.print("Validation: ");
+      Serial.print(validate(content));
+      Serial.print(" Content: ");
+      Serial.println(content);*/
+      parseValues(content);
+}
+
+void parseValues(String content){
+ 
+  int firstComma = content.indexOf(",");
+  int secondComma = content.indexOf(",", firstComma+1);
+  int thirdComma = content.indexOf(",", secondComma+1);
+  
+  int id = content.substring(1,firstComma).toInt();
+  float temperature = stringToFloat(content.substring(firstComma+1, secondComma));
+  float humidity = stringToFloat(content.substring(secondComma+1, thirdComma));
+  
+  Serial.print("Id: ");
+  Serial.print(id);
+  Serial.print(" H: ");
+  Serial.print(humidity);
+  Serial.print(" T: ");
+  Serial.print(temperature);
+  Serial.print(" V: ");
+  Serial.println(validate(content));
 }
 
 String buildReading(int id, float humidity, float temperature){
@@ -90,9 +124,14 @@ boolean validate(String reading){
 
 String floatToString(float input){
    char buff[10];
-
    dtostrf(input,1,2,buff);
    return String(buff); 
+}
+
+float stringToFloat(String input){
+  char buff[input.length()];
+  input.toCharArray(buff, input.length());
+  return atof(buff);
 }
 
 int checksum(String input){
