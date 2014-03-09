@@ -22,7 +22,7 @@ int XBeeListener::checksum(String input){
 
 String XBeeListener::buildReading(int id, String type, float humidity, float temperature, String name){
   
- String reading = "s"; //start
+ String reading = "~"; //start
 
  reading.concat(id);
  reading.concat(",");
@@ -36,7 +36,7 @@ String XBeeListener::buildReading(int id, String type, float humidity, float tem
  reading.concat(",");
  reading.concat(checksum(reading));
  
- reading.concat("e"); //end
+ reading.concat("*"); //end
  
  return reading;
 }

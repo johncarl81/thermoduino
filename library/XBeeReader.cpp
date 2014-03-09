@@ -6,7 +6,7 @@ void XBeeReader::read(ThermoduinoListener* listener){
   boolean serialRead = false;
   while(_xbeeSerial->available()){
     char c = _xbeeSerial->read();
-    if(c == 's'){
+    if(c == '~'){
       serialRead = true;
       content = "";
     }
@@ -15,7 +15,7 @@ void XBeeReader::read(ThermoduinoListener* listener){
       content.concat(c);
     }
     
-    if(c == 'e'){
+    if(c == '*'){
       serialRead = false;
 	parseRun(content, listener);
     }

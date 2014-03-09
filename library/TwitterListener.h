@@ -16,7 +16,6 @@ public:
 private:
 
 	Twitter *_twitter;
-	int twitterLoopVal;
 };
 
 #endif

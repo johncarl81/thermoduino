@@ -10,10 +10,8 @@
 
 class LoggerListener : public ThermoduinoListener {
 public:
-	LoggerListener();
+	LoggerListener(){};
 	void listen(int id, float tempurature, float humidity, String location);
-private:
-	int loopVal;
 };
 
 #endif
